@@ -273,7 +273,7 @@
                     </div>
                 </div>
 
-                <!-- NEW: Dealership Directory & POS Breakdown by Region inside Summary Tab -->
+                <!-- Dealership Directory & POS Breakdown by Region inside Summary Tab -->
                 <div class="border border-slate-200 rounded-xl overflow-hidden">
                     <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
@@ -785,24 +785,30 @@
             renderSummaryDealerDirectory();
         }
 
-        function getDealerSavedStats(regionCode, dealerName) {
-            // Check both specific region bucket and NATIONAL bucket in case user edited while in National view
+        function getDealerItemsRecord(regionCode, dealerName) {
             const sources = [state.regions[regionCode], state.regions.NATIONAL];
+            for (const src of sources) {
+                if (src && src.dealers && src.dealers[dealerName]) {
+                    return src.dealers[dealerName];
+                }
+            }
+            return null;
+        }
+
+        function getDealerSavedStats(regionCode, dealerName) {
+            const itemsList = getDealerItemsRecord(regionCode, dealerName);
             let have = 0;
             let need = 0;
             const neededItems = [];
 
-            for (const src of sources) {
-                if (src && src.dealers && src.dealers[dealerName]) {
-                    src.dealers[dealerName].forEach(it => {
-                        const h = parseInt(it.have, 10) || 0;
-                        const n = parseInt(it.need, 10) || 0;
-                        have += h;
-                        need += n;
-                        if (n > 0) neededItems.push(`${n}× ${it.text}`);
-                    });
-                    break;
-                }
+            if (itemsList) {
+                itemsList.forEach(it => {
+                    const h = parseInt(it.have, 10) || 0;
+                    const n = parseInt(it.need, 10) || 0;
+                    have += h;
+                    need += n;
+                    if (n > 0) neededItems.push(`${n}× ${it.text}`);
+                });
             }
             return { have, need, neededItems };
         }
@@ -1120,34 +1126,55 @@
         }
 
         function exportSummaryCSV() {
-            const rows = [['Region', 'Dealership', 'Type', 'POS Item', 'Verified', 'Have', 'Need']];
+            const rows = [['Region', 'State', 'Dealership', 'Dealer Group', 'Type', 'POS Item', 'Verified', 'Have', 'Need']];
+            const stateRegionCodes = ['VIC_TAS', 'NSW_ACT', 'QLD', 'WA', 'SA_NT'];
+
+            // Export every actual dealership across all regions
+            stateRegionCodes.forEach(code => {
+                const regionName = REGION_NAMES[code];
+                const dealers = getDealersForRegion(code);
+
+                dealers.forEach(dealer => {
+                    const savedItems = getDealerItemsRecord(code, dealer.name);
+                    const itemsToExport = savedItems || getDefaultItems();
+
+                    itemsToExport.forEach(item => {
+                        rows.push([
+                            `"${regionName}"`,
+                            `"${dealer.state}"`,
+                            `"${dealer.name.replace(/"/g, '""')}"`,
+                            `"${dealer.group.replace(/"/g, '""')}"`,
+                            `"${item.tag}"`,
+                            `"${item.text.replace(/"/g, '""')}"`,
+                            item.checked ? 'Yes' : 'No',
+                            parseInt(item.have, 10) || 0,
+                            parseInt(item.need, 10) || 0
+                        ]);
+                    });
+                });
+            });
+
+            // Also include any general regional-level pool entries if Have or Need > 0
             Object.keys(REGION_NAMES).forEach(code => {
                 const regionName = REGION_NAMES[code];
-                const regionObj = state.regions[code] || { items: [], dealers: {} };
-                regionObj.items.forEach(item => {
-                    rows.push([
-                        `"${regionName}"`,
-                        `"All Regional Dealerships"`,
-                        `"${item.tag}"`,
-                        `"${item.text.replace(/"/g, '""')}"`,
-                        item.checked ? 'Yes' : 'No',
-                        parseInt(item.have, 10) || 0,
-                        parseInt(item.need, 10) || 0
-                    ]);
-                });
-                if (regionObj.dealers) {
-                    Object.entries(regionObj.dealers).forEach(([dealerName, dItems]) => {
-                        dItems.forEach(item => {
+                const regionObj = state.regions[code];
+                if (regionObj && regionObj.items) {
+                    regionObj.items.forEach(item => {
+                        const h = parseInt(item.have, 10) || 0;
+                        const n = parseInt(item.need, 10) || 0;
+                        if (h > 0 || n > 0 || item.checked) {
                             rows.push([
                                 `"${regionName}"`,
-                                `"${dealerName.replace(/"/g, '""')}"`,
+                                `""`,
+                                `"${regionName} Regional Pool"`,
+                                `""`,
                                 `"${item.tag}"`,
                                 `"${item.text.replace(/"/g, '""')}"`,
                                 item.checked ? 'Yes' : 'No',
-                                parseInt(item.have, 10) || 0,
-                                parseInt(item.need, 10) || 0
+                                h,
+                                n
                             ]);
-                        });
+                        }
                     });
                 }
             });
@@ -1155,11 +1182,11 @@
             const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(r => r.join(',')).join('\n');
             const link = document.createElement('a');
             link.setAttribute('href', encodeURI(csvContent));
-            link.setAttribute('download', `BYD_Regional_POS_Summary_${new Date().toISOString().slice(0, 10)}.csv`);
+            link.setAttribute('download', `BYD_Dealership_POS_Summary_${new Date().toISOString().slice(0, 10)}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            showToast('Summary CSV downloaded');
+            showToast('Dealership CSV downloaded');
         }
  
         function toggleItem(id) {
