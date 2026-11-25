@@ -105,7 +105,6 @@
                     <label for="dealerSelect" class="text-xs font-semibold text-slate-400 shrink-0">Dealership:</label>
                     <select id="dealerSelect" aria-label="Select Dealership"
                             class="w-full bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm font-semibold rounded-xl px-3.5 py-2 focus:outline-none focus:border-teal-400 cursor-pointer">
-                        <!-- Populated dynamically per region -->
                     </select>
                 </div>
             </div>
@@ -171,7 +170,6 @@
                                    class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-teal-500">
                         </div>
                         <div id="dealerDirectoryGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto pr-1">
-                            <!-- Rendered via JS -->
                         </div>
                     </div>
                 </div>
@@ -188,7 +186,6 @@
      
                 <!-- POS Checklist Items -->
                 <ul id="checklistItems" class="divide-y divide-slate-100">
-                    <!-- Rendered via JS -->
                 </ul>
      
                 <!-- Clean "+ Add POS Item" Inline Input Bar -->
@@ -216,15 +213,15 @@
             </div>
 
             <!-- ===================================================== -->
-            <!-- TAB 2: SUMMARY BY REGION & WHAT IS NEEDED             -->
+            <!-- TAB 2: SUMMARY BY REGION & DEALERSHIPS                -->
             <!-- ===================================================== -->
             <div id="summaryTabContent" class="hidden p-5 sm:p-6 space-y-6">
                 
                 <!-- Top Summary Strip -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
                     <div>
-                        <h2 class="text-base font-bold text-slate-900">POS Summary by Region</h2>
-                        <p class="text-xs text-slate-400">Overview of dealership counts, stock on hand, and exact POS quantities required across all regions</p>
+                        <h2 class="text-base font-bold text-slate-900">POS Summary &amp; Dealership Network by Region</h2>
+                        <p class="text-xs text-slate-400">Overview of all 131 dealerships, dealer groups, stock on hand, and POS quantities required</p>
                     </div>
                     <button type="button" onclick="exportSummaryCSV()" class="self-start sm:self-auto px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition no-print">
                         Download CSV
@@ -271,7 +268,43 @@
                                 </tr>
                             </thead>
                             <tbody id="summaryRegionRows" class="divide-y divide-slate-100">
-                                <!-- Rendered via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- NEW: Dealership Directory & POS Breakdown by Region inside Summary Tab -->
+                <div class="border border-slate-200 rounded-xl overflow-hidden">
+                    <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-800">Dealerships &amp; POS Status by Region</span>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Filter by region or search any dealership to view its dealer group and POS requirements</p>
+                        </div>
+                        <div class="no-print">
+                            <input type="text" id="summaryDealerSearch" oninput="renderSummaryDealerDirectory()" placeholder="Search dealership or group..."
+                                   class="w-full sm:w-56 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500">
+                        </div>
+                    </div>
+
+                    <!-- Region Filter Pills -->
+                    <div id="summaryRegionFilterPills" class="flex flex-wrap gap-1.5 px-4 py-2.5 bg-white border-b border-slate-100 no-print">
+                    </div>
+
+                    <!-- Dealership Table -->
+                    <div class="overflow-x-auto max-h-96 overflow-y-auto">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead class="sticky top-0 bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500 z-10">
+                                <tr>
+                                    <th class="py-2.5 px-4">Dealership</th>
+                                    <th class="py-2.5 px-4">Region / State</th>
+                                    <th class="py-2.5 px-4">Dealer Group</th>
+                                    <th class="py-2.5 px-4 text-right">Have</th>
+                                    <th class="py-2.5 px-4 text-right">Need</th>
+                                    <th class="py-2.5 px-4">POS Needed</th>
+                                    <th class="py-2.5 px-4 text-right no-print">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summaryDealerRows" class="divide-y divide-slate-100 bg-white">
                             </tbody>
                         </table>
                     </div>
@@ -293,7 +326,6 @@
                                 </tr>
                             </thead>
                             <tbody id="summaryItemRollupRows" class="divide-y divide-slate-100">
-                                <!-- Rendered via JS -->
                             </tbody>
                         </table>
                     </div>
@@ -463,14 +495,14 @@
         function getDealersForRegion(regionCode) {
             if (regionCode === 'NATIONAL') {
                 return [
-                    ...REGIONAL_DEALERSHIPS.VIC_TAS,
-                    ...REGIONAL_DEALERSHIPS.NSW_ACT,
-                    ...REGIONAL_DEALERSHIPS.QLD,
-                    ...REGIONAL_DEALERSHIPS.WA,
-                    ...REGIONAL_DEALERSHIPS.SA_NT
+                    ...REGIONAL_DEALERSHIPS.VIC_TAS.map(d => ({ ...d, regionCode: 'VIC_TAS' })),
+                    ...REGIONAL_DEALERSHIPS.NSW_ACT.map(d => ({ ...d, regionCode: 'NSW_ACT' })),
+                    ...REGIONAL_DEALERSHIPS.QLD.map(d => ({ ...d, regionCode: 'QLD' })),
+                    ...REGIONAL_DEALERSHIPS.WA.map(d => ({ ...d, regionCode: 'WA' })),
+                    ...REGIONAL_DEALERSHIPS.SA_NT.map(d => ({ ...d, regionCode: 'SA_NT' }))
                 ];
             }
-            return REGIONAL_DEALERSHIPS[regionCode] || [];
+            return (REGIONAL_DEALERSHIPS[regionCode] || []).map(d => ({ ...d, regionCode }));
         }
  
         const TAG_STYLES = {
@@ -501,7 +533,13 @@
                     dealers: {}
                 };
             });
-            return { currentRegion: 'NATIONAL', currentDealer: 'ALL', activeTab: 'checklist', regions };
+            return {
+                currentRegion: 'NATIONAL',
+                currentDealer: 'ALL',
+                activeTab: 'checklist',
+                summaryDealerRegionFilter: 'ALL',
+                regions
+            };
         }
  
         function loadState() {
@@ -521,7 +559,6 @@
                 }
             } catch (e) {}
 
-            // Merge shared URL payload if opened via a Share Link
             try {
                 if (window.location.hash && window.location.hash.startsWith('#share=')) {
                     const encoded = window.location.hash.slice(7);
@@ -653,11 +690,14 @@
             }
         }
 
-        function selectDealerFromCard(dealerName) {
+        function selectDealerFromCard(dealerName, targetRegionCode = null) {
+            if (targetRegionCode) {
+                state.currentRegion = targetRegionCode;
+            }
             state.currentDealer = dealerName;
-            saveState();
+            switchTab('checklist');
             renderAll();
-            showToast(`Switched to ${dealerName}`);
+            showToast(`Opened ${dealerName}`);
         }
 
         function renderDealerDirectory() {
@@ -739,6 +779,111 @@
             renderAll();
         }
 
+        function setSummaryDealerFilter(regionCode) {
+            state.summaryDealerRegionFilter = regionCode;
+            saveState();
+            renderSummaryDealerDirectory();
+        }
+
+        function getDealerSavedStats(regionCode, dealerName) {
+            // Check both specific region bucket and NATIONAL bucket in case user edited while in National view
+            const sources = [state.regions[regionCode], state.regions.NATIONAL];
+            let have = 0;
+            let need = 0;
+            const neededItems = [];
+
+            for (const src of sources) {
+                if (src && src.dealers && src.dealers[dealerName]) {
+                    src.dealers[dealerName].forEach(it => {
+                        const h = parseInt(it.have, 10) || 0;
+                        const n = parseInt(it.need, 10) || 0;
+                        have += h;
+                        need += n;
+                        if (n > 0) neededItems.push(`${n}× ${it.text}`);
+                    });
+                    break;
+                }
+            }
+            return { have, need, neededItems };
+        }
+
+        function renderSummaryDealerDirectory() {
+            const pillsContainer = document.getElementById('summaryRegionFilterPills');
+            const rowsContainer = document.getElementById('summaryDealerRows');
+            const searchInput = document.getElementById('summaryDealerSearch');
+            if (!pillsContainer || !rowsContainer) return;
+
+            const activeFilter = state.summaryDealerRegionFilter || 'ALL';
+            const filterOptions = [
+                { code: 'ALL', label: 'All Regions (131)' },
+                { code: 'VIC_TAS', label: 'VIC / TAS (38)' },
+                { code: 'NSW_ACT', label: 'NSW / ACT (46)' },
+                { code: 'QLD', label: 'QLD (24)' },
+                { code: 'WA', label: 'WA (11)' },
+                { code: 'SA_NT', label: 'SA / NT (12)' }
+            ];
+
+            pillsContainer.innerHTML = filterOptions.map(opt => {
+                const isActive = activeFilter === opt.code;
+                return `
+                    <button type="button" onclick="setSummaryDealerFilter('${opt.code}')"
+                            class="px-3 py-1 rounded-lg text-xs font-bold transition ${isActive ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                        ${opt.label}
+                    </button>
+                `;
+            }).join('');
+
+            const allDealers = activeFilter === 'ALL'
+                ? getDealersForRegion('NATIONAL')
+                : getDealersForRegion(activeFilter);
+
+            const query = (searchInput ? searchInput.value : '').trim().toLowerCase();
+            const filteredDealers = query
+                ? allDealers.filter(d =>
+                    d.name.toLowerCase().includes(query) ||
+                    d.group.toLowerCase().includes(query) ||
+                    d.state.toLowerCase().includes(query) ||
+                    REGION_NAMES[d.regionCode].toLowerCase().includes(query))
+                : allDealers;
+
+            if (filteredDealers.length === 0) {
+                rowsContainer.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-xs text-slate-400">No dealerships match "${escapeHtml(query)}"</td></tr>`;
+                return;
+            }
+
+            rowsContainer.innerHTML = filteredDealers.map(d => {
+                const stats = getDealerSavedStats(d.regionCode, d.name);
+                const statusBadge = d.status === 'RELOCATION'
+                    ? `<span class="ml-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">RELOCATION</span>`
+                    : '';
+                const neededHtml = stats.neededItems.length > 0
+                    ? stats.neededItems.map(txt => `<span class="inline-block bg-rose-50 text-rose-700 border border-rose-200 text-[11px] font-medium px-1.5 py-0.5 rounded mr-1 mb-0.5">${escapeHtml(txt)}</span>`).join('')
+                    : `<span class="text-xs text-slate-400">Regional pool / None</span>`;
+
+                return `
+                    <tr class="hover:bg-slate-50/80 transition align-top">
+                        <td class="py-2.5 px-4 font-bold text-slate-900 whitespace-nowrap">
+                            ${escapeHtml(d.name)}${statusBadge}
+                        </td>
+                        <td class="py-2.5 px-4 whitespace-nowrap text-xs">
+                            <span class="font-semibold text-slate-700">${escapeHtml(REGION_NAMES[d.regionCode])}</span>
+                            <span class="ml-1 px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-bold text-[10px]">${escapeHtml(d.state)}</span>
+                        </td>
+                        <td class="py-2.5 px-4 whitespace-nowrap text-xs font-medium text-slate-600">${escapeHtml(d.group)}</td>
+                        <td class="py-2.5 px-4 text-right font-semibold text-slate-700">${stats.have > 0 ? stats.have.toLocaleString() : '—'}</td>
+                        <td class="py-2.5 px-4 text-right font-extrabold ${stats.need > 0 ? 'text-rose-600' : 'text-slate-400'}">${stats.need > 0 ? stats.need.toLocaleString() : '0'}</td>
+                        <td class="py-2.5 px-4">${neededHtml}</td>
+                        <td class="py-2.5 px-4 text-right no-print whitespace-nowrap">
+                            <button type="button" onclick="selectDealerFromCard('${escapeHtml(d.name).replace(/'/g, "\\'")}', '${d.regionCode}')"
+                                    class="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline underline-offset-2">
+                                Edit
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
         function getCombinedRegionTotals(regionCode) {
             const regionObj = state.regions[regionCode] || { items: getDefaultItems(), dealers: {} };
             let rHave = 0;
@@ -758,7 +903,6 @@
                 }
             });
 
-            // Include any individual dealership entries saved under this region
             if (regionObj.dealers) {
                 Object.entries(regionObj.dealers).forEach(([dealerName, dItems]) => {
                     dItems.forEach(item => {
@@ -954,6 +1098,8 @@
             document.getElementById('sumVerifiedCount').textContent = `${totalVerified} / ${totalItems} regional items checked`;
 
             document.getElementById('summaryRegionRows').innerHTML = regionRows.join('');
+
+            renderSummaryDealerDirectory();
 
             const rollupArray = Array.from(rollupMap.values()).sort((a, b) => b.need - a.need);
             document.getElementById('summaryItemRollupRows').innerHTML = rollupArray.map(item => {
