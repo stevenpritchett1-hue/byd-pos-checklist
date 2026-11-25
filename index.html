@@ -48,11 +48,11 @@
     <!-- Custom Confirm Modal -->
     <div id="resetModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4 no-print">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-200">
-            <h3 class="text-base font-bold text-slate-900">Reset this region?</h3>
-            <p class="text-sm text-slate-500 mt-1.5 mb-5">This will restore the default POS items and clear Have / Need counts for the selected region.</p>
+            <h3 class="text-base font-bold text-slate-900">Reset this selection?</h3>
+            <p class="text-sm text-slate-500 mt-1.5 mb-5">This will restore the default POS items and clear Have / Need counts for the currently selected region or dealership.</p>
             <div class="flex justify-end gap-2">
                 <button onclick="closeResetModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">Cancel</button>
-                <button onclick="confirmResetRegion()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 text-white hover:bg-rose-700 transition">Reset Region</button>
+                <button onclick="confirmResetCurrent()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 text-white hover:bg-rose-700 transition">Reset</button>
             </div>
         </div>
     </div>
@@ -61,38 +61,53 @@
     <div class="max-w-4xl mx-auto space-y-6">
  
         <!-- 1. TOP HEADER -->
-        <header class="bg-slate-900 text-white rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div class="flex items-center gap-3.5">
-                <span class="bg-rose-600 text-white font-extrabold tracking-widest px-3 py-1.5 rounded-lg text-sm select-none">
-                    BYD
-                </span>
-                <div>
-                    <h1 class="text-lg sm:text-xl font-bold tracking-tight">BYD Regional POS Checklist</h1>
-                    <p class="text-xs text-slate-400">Point of Sale Stock Verification &amp; Regional Summary</p>
+        <header class="bg-slate-900 text-white rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3.5">
+                    <span class="bg-rose-600 text-white font-extrabold tracking-widest px-3 py-1.5 rounded-lg text-sm select-none">
+                        BYD
+                    </span>
+                    <div>
+                        <h1 class="text-lg sm:text-xl font-bold tracking-tight">BYD Regional POS Checklist</h1>
+                        <p class="text-xs text-slate-400">Point of Sale Stock Verification &amp; Network Summary (131 Sites)</p>
+                    </div>
+                </div>
+ 
+                <div class="flex flex-wrap items-center gap-2 no-print">
+                    <button onclick="window.print()" class="px-3.5 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs sm:text-sm font-bold transition">
+                        Print
+                    </button>
+                    <button onclick="shareCurrentState()" class="px-3.5 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white text-xs sm:text-sm font-bold transition">
+                        Share Link
+                    </button>
+                    <button onclick="openResetModal()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs sm:text-sm font-semibold transition">
+                        Reset
+                    </button>
                 </div>
             </div>
- 
-            <div class="flex flex-wrap items-center gap-2 no-print">
-                <!-- Region Dropdown -->
-                <select id="regionSelect" aria-label="Select Region"
-                        class="bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm font-semibold rounded-xl px-3.5 py-2 focus:outline-none focus:border-teal-400 cursor-pointer">
-                    <option value="NATIONAL">National</option>
-                    <option value="VIC_TAS">VIC / TAS</option>
-                    <option value="NSW_ACT">NSW / ACT</option>
-                    <option value="QLD">QLD</option>
-                    <option value="WA">WA</option>
-                    <option value="SA_NT">SA / NT</option>
-                </select>
- 
-                <button onclick="window.print()" class="px-3.5 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs sm:text-sm font-bold transition">
-                    Print
-                </button>
-                <button onclick="shareCurrentState()" class="px-3.5 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white text-xs sm:text-sm font-bold transition">
-                    Share Link
-                </button>
-                <button onclick="openResetModal()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs sm:text-sm font-semibold transition">
-                    Reset
-                </button>
+
+            <!-- Region & Dealership Filter Bar -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-3 border-t border-slate-800 no-print">
+                <div class="flex items-center gap-2 flex-1">
+                    <label for="regionSelect" class="text-xs font-semibold text-slate-400 shrink-0">Region:</label>
+                    <select id="regionSelect" aria-label="Select Region"
+                            class="w-full sm:w-48 bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm font-semibold rounded-xl px-3.5 py-2 focus:outline-none focus:border-teal-400 cursor-pointer">
+                        <option value="NATIONAL">National (131 Sites)</option>
+                        <option value="VIC_TAS">VIC / TAS (38 Sites)</option>
+                        <option value="NSW_ACT">NSW / ACT (46 Sites)</option>
+                        <option value="QLD">QLD (24 Sites)</option>
+                        <option value="WA">WA (11 Sites)</option>
+                        <option value="SA_NT">SA / NT (12 Sites)</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2 flex-1">
+                    <label for="dealerSelect" class="text-xs font-semibold text-slate-400 shrink-0">Dealership:</label>
+                    <select id="dealerSelect" aria-label="Select Dealership"
+                            class="w-full bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm font-semibold rounded-xl px-3.5 py-2 focus:outline-none focus:border-teal-400 cursor-pointer">
+                        <!-- Populated dynamically per region -->
+                    </select>
+                </div>
             </div>
         </header>
  
@@ -118,15 +133,18 @@
             <!-- TAB 1: REGIONAL POS CHECKLIST                         -->
             <!-- ===================================================== -->
             <div id="checklistTabContent" class="p-5 sm:p-6">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-2 border-b border-slate-100">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-3 border-b border-slate-100">
                     <div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-wrap items-center gap-2">
                             <h2 class="text-base font-bold text-slate-900">POS Inventory &amp; Readiness</h2>
                             <span id="activeRegionPill" class="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-teal-50 text-teal-700 border border-teal-200">
                                 National
                             </span>
+                            <span id="activeDealerPill" class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                All Regional Dealerships
+                            </span>
                         </div>
-                        <p class="text-xs text-slate-400 mt-0.5">Update Have &amp; Need counts, click text to edit, and tick to verify &bull; Auto-saved per region</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Update Have &amp; Need counts, click text to edit, and tick to verify &bull; Auto-saved</p>
                     </div>
                     <div class="flex items-center gap-2 self-start sm:self-auto">
                         <span id="totalNeededPill" class="text-xs font-bold px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
@@ -135,6 +153,26 @@
                         <span id="checklistProgress" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700">
                             0 / 6 Verified
                         </span>
+                    </div>
+                </div>
+
+                <!-- Collapsible Regional Dealership Directory -->
+                <div class="mb-4 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
+                    <button type="button" onclick="toggleDealerDirectory()" class="w-full px-4 py-2.5 flex items-center justify-between text-left hover:bg-slate-100/80 transition">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-slate-800" id="dealerDirectoryTitle">Dealerships in National (131)</span>
+                            <span class="text-[11px] text-slate-500 hidden sm:inline">&bull; Click any dealership to select it</span>
+                        </div>
+                        <span id="dealerDirectoryArrow" class="text-xs font-bold text-teal-700">Show List ▾</span>
+                    </button>
+                    <div id="dealerDirectoryBody" class="hidden px-4 pb-3.5 pt-2 border-t border-slate-200 bg-white">
+                        <div class="mb-2.5 no-print">
+                            <input type="text" id="dealerSearchInput" oninput="renderDealerDirectory()" placeholder="Filter dealerships by name, state, or dealer group..."
+                                   class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-teal-500">
+                        </div>
+                        <div id="dealerDirectoryGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto pr-1">
+                            <!-- Rendered via JS -->
+                        </div>
                     </div>
                 </div>
 
@@ -186,7 +224,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
                     <div>
                         <h2 class="text-base font-bold text-slate-900">POS Summary by Region</h2>
-                        <p class="text-xs text-slate-400">Overview of stock on hand and exact POS quantities required across all regions</p>
+                        <p class="text-xs text-slate-400">Overview of dealership counts, stock on hand, and exact POS quantities required across all regions</p>
                     </div>
                     <button type="button" onclick="exportSummaryCSV()" class="self-start sm:self-auto px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition no-print">
                         Download CSV
@@ -204,7 +242,7 @@
                     <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
                         <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total POS On Hand</div>
                         <div id="sumTotalHave" class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">0</div>
-                        <div class="text-xs text-slate-500 mt-1">Current stock across regions</div>
+                        <div class="text-xs text-slate-500 mt-1">Current stock across 131 dealerships</div>
                     </div>
 
                     <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
@@ -224,6 +262,7 @@
                             <thead>
                                 <tr class="border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-400 bg-white">
                                     <th class="py-2.5 px-4">Region</th>
+                                    <th class="py-2.5 px-4 text-center">Dealers</th>
                                     <th class="py-2.5 px-4">Verified</th>
                                     <th class="py-2.5 px-4 text-right">Have</th>
                                     <th class="py-2.5 px-4 text-right">Need</th>
@@ -266,7 +305,7 @@
     </div>
  
     <script>
-        const STORAGE_KEY = 'byd_regional_pos_checklist_v2';
+        const STORAGE_KEY = 'byd_regional_pos_dealers_v1';
  
         const REGION_NAMES = {
             NATIONAL: 'National',
@@ -276,6 +315,163 @@
             WA: 'WA',
             SA_NT: 'SA / NT'
         };
+
+        const REGIONAL_DEALERSHIPS = {
+            VIC_TAS: [
+                { name: "BYD Ballarat", state: "VIC", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Bendigo", state: "VIC", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Berwick", state: "VIC", group: "Harmony", status: "Operational" },
+                { name: "BYD Brighton", state: "VIC", group: "Eagers", status: "Operational" },
+                { name: "BYD Brooklyn", state: "VIC", group: "Eagers", status: "Operational" },
+                { name: "BYD Caroline Springs", state: "VIC", group: "Harmony", status: "Operational" },
+                { name: "BYD Chadstone", state: "VIC", group: "Eagers", status: "Operational" },
+                { name: "BYD Cranbourne", state: "VIC", group: "Glory EV", status: "Operational" },
+                { name: "BYD Dandenong", state: "VIC", group: "Eagers", status: "Operational" },
+                { name: "BYD Devonport", state: "TAS", group: "Eagers", status: "Operational" },
+                { name: "BYD Essendon", state: "VIC", group: "Eagers", status: "Operational" },
+                { name: "BYD Fairfield", state: "VIC", group: "Harmony", status: "Operational" },
+                { name: "BYD Ferntree Gully", state: "VIC", group: "Glory EV", status: "Operational" },
+                { name: "BYD Frankston", state: "VIC", group: "Harmony", status: "Operational" },
+                { name: "BYD Geelong", state: "VIC", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Hobart", state: "TAS", group: "Eagers", status: "Operational" },
+                { name: "BYD Kilmore", state: "VIC", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Launceston", state: "TAS", group: "Eagers", status: "Operational" },
+                { name: "BYD Lilydale", state: "VIC", group: "Glory EV", status: "Operational" },
+                { name: "BYD Melbourne CBD", state: "VIC", group: "Harmony", status: "Operational" },
+                { name: "BYD Mildura", state: "VIC", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Mornington", state: "VIC", group: "Eagers", status: "Operational" },
+                { name: "BYD Nunawading", state: "VIC", group: "Harmony", status: "Operational" },
+                { name: "BYD Pakenham", state: "VIC", group: "Glory EV", status: "Operational" },
+                { name: "BYD Port Melbourne", state: "VIC", group: "Eagers", status: "Operational" },
+                { name: "BYD Richmond", state: "VIC", group: "Eagers", status: "Operational" },
+                { name: "BYD Ringwood", state: "VIC", group: "Glory EV", status: "Operational" },
+                { name: "BYD Seymour", state: "VIC", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Shepparton", state: "VIC", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD South Morang", state: "VIC", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Sunbury", state: "VIC", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Traralgon", state: "VIC", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Warragul", state: "VIC", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Warrnambool", state: "VIC", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Waverley", state: "VIC", group: "Eagers", status: "Operational" },
+                { name: "BYD Werribee", state: "VIC", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Wodonga", state: "VIC", group: "Harmony", status: "Operational" },
+                { name: "TBC (Woodgrove Shopping Centre)", state: "VIC", group: "Harmony", status: "Operational" }
+            ],
+            NSW_ACT: [
+                { name: "BYD Albion Park", state: "NSW", group: "Harmony", status: "Operational" },
+                { name: "BYD Alexandria", state: "NSW", group: "Eagers", status: "Operational" },
+                { name: "BYD Artarmon", state: "NSW", group: "Eagers", status: "Operational" },
+                { name: "BYD Bathurst", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Bega", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Blacktown", state: "NSW", group: "Eagers", status: "Operational" },
+                { name: "BYD Brookvale", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Campbelltown", state: "NSW", group: "Harmony", status: "Operational" },
+                { name: "BYD Canberra", state: "ACT", group: "Eagers", status: "Operational" },
+                { name: "BYD Castle Hill", state: "NSW", group: "Harmony", status: "Operational" },
+                { name: "BYD Cessnock", state: "NSW", group: "Eagers", status: "Operational" },
+                { name: "BYD Coffs Harbour", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Cooma", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Dubbo", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Glendale", state: "NSW", group: "Eagers", status: "Operational" },
+                { name: "BYD Gosford", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Goulburn (Stage 1)", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Goulburn (Stage 2)", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Griffith", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Haberfield", state: "NSW", group: "Harmony", status: "Operational" },
+                { name: "BYD Homebush", state: "NSW", group: "Harmony", status: "Operational" },
+                { name: "BYD Hornsby", state: "NSW", group: "Harmony", status: "Operational" },
+                { name: "BYD Liverpool", state: "NSW", group: "Eagers", status: "Operational" },
+                { name: "BYD Maitland", state: "NSW", group: "Eagers", status: "Operational" },
+                { name: "BYD Moruya", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Mudgee", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Muswellbrook", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Narellan", state: "NSW", group: "Harmony", status: "Operational" },
+                { name: "BYD Newcastle City", state: "NSW", group: "Eagers", status: "Operational" },
+                { name: "BYD Nowra", state: "NSW", group: "Harmony", status: "Operational" },
+                { name: "BYD Orange", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Parramatta", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Penrith", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Phillip", state: "ACT", group: "Eagers", status: "Operational" },
+                { name: "BYD Port Macquarie", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Rockdale", state: "NSW", group: "Harmony", status: "Operational" },
+                { name: "BYD Ryde", state: "NSW", group: "Eagers", status: "Operational" },
+                { name: "BYD Singleton", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Southern Highlands", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Sutherland", state: "NSW", group: "Eagers", status: "Operational" },
+                { name: "BYD Tamworth", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Taree", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Tuggerah", state: "NSW", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Wagga Wagga", state: "NSW", group: "Harmony", status: "Operational" },
+                { name: "BYD Windsor", state: "NSW", group: "Harmony", status: "Operational" },
+                { name: "BYD Wollongong", state: "NSW", group: "Harmony", status: "Operational" }
+            ],
+            QLD: [
+                { name: "BYD Aspley", state: "QLD", group: "Eagers", status: "Operational" },
+                { name: "BYD Brisbane", state: "QLD", group: "Eagers", status: "Operational" },
+                { name: "BYD Bundaberg", state: "QLD", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Burleigh Heads", state: "QLD", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Cairns", state: "QLD", group: "Eagers", status: "Operational" },
+                { name: "BYD Capalaba", state: "QLD", group: "Eagers", status: "Operational" },
+                { name: "BYD Dalby", state: "QLD", group: "Eagers", status: "Operational" },
+                { name: "BYD Gladstone", state: "QLD", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Gold Coast", state: "QLD", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Gold Coast (Relocation - Southport)", state: "QLD", group: "EVDG (RP)", status: "RELOCATION" },
+                { name: "BYD Hervey Bay", state: "QLD", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Indooroopilly", state: "QLD", group: "Eagers", status: "Operational" },
+                { name: "BYD Ipswich", state: "QLD", group: "Eagers", status: "Operational" },
+                { name: "BYD Mackay", state: "QLD", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Mareeba", state: "QLD", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Moorooka", state: "QLD", group: "Eagers", status: "Operational" },
+                { name: "BYD Mount Gravatt", state: "QLD", group: "Eagers", status: "Operational" },
+                { name: "BYD Noosa", state: "QLD", group: "Harmony", status: "Operational" },
+                { name: "BYD North Lakes", state: "QLD", group: "Eagers", status: "Operational" },
+                { name: "BYD Rockhampton", state: "QLD", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Springwood", state: "QLD", group: "Eagers", status: "Operational" },
+                { name: "BYD Sunshine Coast", state: "QLD", group: "Eagers", status: "Operational" },
+                { name: "BYD Toowoomba", state: "QLD", group: "Eagers", status: "Operational" },
+                { name: "BYD Townsville", state: "QLD", group: "Eagers", status: "Operational" }
+            ],
+            WA: [
+                { name: "BYD Albany", state: "WA", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Bunbury", state: "WA", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Cannington", state: "WA", group: "Eagers", status: "Operational" },
+                { name: "BYD Fremantle", state: "WA", group: "Eagers", status: "Operational" },
+                { name: "BYD Geraldton", state: "WA", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Mandurah", state: "WA", group: "Eagers", status: "Operational" },
+                { name: "BYD Midland", state: "WA", group: "Eagers", status: "Operational" },
+                { name: "BYD Osborne Park", state: "WA", group: "Eagers", status: "Operational" },
+                { name: "BYD Rockingham", state: "WA", group: "Eagers", status: "Operational" },
+                { name: "BYD Wangara", state: "WA", group: "Eagers", status: "Operational" },
+                { name: "BYD West Perth", state: "WA", group: "Eagers", status: "Operational" }
+            ],
+            SA_NT: [
+                { name: "BYD Barossa", state: "SA", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Darwin", state: "NT", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Fullarton", state: "SA", group: "Eagers", status: "Operational" },
+                { name: "BYD Mount Gambier", state: "SA", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Murray Bridge", state: "SA", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Nailsworth", state: "SA", group: "Eagers", status: "Operational" },
+                { name: "BYD Port Augusta", state: "SA", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Reynella", state: "SA", group: "Eagers", status: "Operational" },
+                { name: "BYD Riverland", state: "SA", group: "EVDG (RP)", status: "Operational" },
+                { name: "BYD Salisbury", state: "SA", group: "Eagers", status: "Operational" },
+                { name: "BYD St Marys", state: "SA", group: "Eagers", status: "Operational" },
+                { name: "BYD Victor Harbour", state: "SA", group: "EVDG (RP)", status: "Operational" }
+            ]
+        };
+
+        function getDealersForRegion(regionCode) {
+            if (regionCode === 'NATIONAL') {
+                return [
+                    ...REGIONAL_DEALERSHIPS.VIC_TAS,
+                    ...REGIONAL_DEALERSHIPS.NSW_ACT,
+                    ...REGIONAL_DEALERSHIPS.QLD,
+                    ...REGIONAL_DEALERSHIPS.WA,
+                    ...REGIONAL_DEALERSHIPS.SA_NT
+                ];
+            }
+            return REGIONAL_DEALERSHIPS[regionCode] || [];
+        }
  
         const TAG_STYLES = {
             STAND: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -301,10 +497,11 @@
             const regions = {};
             Object.keys(REGION_NAMES).forEach(code => {
                 regions[code] = {
-                    items: getDefaultItems()
+                    items: getDefaultItems(),
+                    dealers: {}
                 };
             });
-            return { currentRegion: 'NATIONAL', activeTab: 'checklist', regions };
+            return { currentRegion: 'NATIONAL', currentDealer: 'ALL', activeTab: 'checklist', regions };
         }
  
         function loadState() {
@@ -316,6 +513,10 @@
                     const parsed = JSON.parse(raw);
                     if (parsed && parsed.regions) {
                         base = { ...base, ...parsed };
+                        Object.keys(REGION_NAMES).forEach(code => {
+                            if (!base.regions[code]) base.regions[code] = { items: getDefaultItems(), dealers: {} };
+                            if (!base.regions[code].dealers) base.regions[code].dealers = {};
+                        });
                     }
                 }
             } catch (e) {}
@@ -328,7 +529,11 @@
                     const shared = JSON.parse(jsonStr);
                     if (shared && shared.regionCode && shared.regionData && REGION_NAMES[shared.regionCode]) {
                         base.currentRegion = shared.regionCode;
-                        base.regions[shared.regionCode] = shared.regionData;
+                        base.currentDealer = shared.dealerName || 'ALL';
+                        base.regions[shared.regionCode] = {
+                            items: shared.regionData.items || getDefaultItems(),
+                            dealers: shared.regionData.dealers || {}
+                        };
                     }
                 }
             } catch (e) {
@@ -342,7 +547,8 @@
             try {
                 const payload = {
                     regionCode: state.currentRegion,
-                    regionData: getActiveRegionData()
+                    dealerName: state.currentDealer,
+                    regionData: state.regions[state.currentRegion]
                 };
                 const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
                 const shareUrl = `${window.location.origin}${window.location.pathname}#share=${encoded}`;
@@ -357,7 +563,8 @@
                 document.execCommand('copy');
                 document.body.removeChild(tempInput);
  
-                showToast(`Shareable ${REGION_NAMES[state.currentRegion]} POS link copied!`);
+                const scopeLabel = state.currentDealer === 'ALL' ? REGION_NAMES[state.currentRegion] : state.currentDealer;
+                showToast(`Shareable ${scopeLabel} POS link copied!`);
             } catch (e) {
                 showToast('Could not generate share link');
             }
@@ -390,8 +597,113 @@
                 .replace(/"/g, '&quot;');
         }
  
-        function getActiveRegionData() {
-            return state.regions[state.currentRegion] || state.regions.NATIONAL;
+        function getActiveItemsList() {
+            const regionObj = state.regions[state.currentRegion] || state.regions.NATIONAL;
+            if (!state.currentDealer || state.currentDealer === 'ALL') {
+                return regionObj.items;
+            }
+            if (!regionObj.dealers) regionObj.dealers = {};
+            if (!regionObj.dealers[state.currentDealer]) {
+                regionObj.dealers[state.currentDealer] = getDefaultItems();
+            }
+            return regionObj.dealers[state.currentDealer];
+        }
+
+        function setActiveItemsList(newItems) {
+            const regionObj = state.regions[state.currentRegion] || state.regions.NATIONAL;
+            if (!state.currentDealer || state.currentDealer === 'ALL') {
+                regionObj.items = newItems;
+            } else {
+                if (!regionObj.dealers) regionObj.dealers = {};
+                regionObj.dealers[state.currentDealer] = newItems;
+            }
+        }
+
+        function populateDealerDropdown() {
+            const dealerSelect = document.getElementById('dealerSelect');
+            if (!dealerSelect) return;
+
+            const dealers = getDealersForRegion(state.currentRegion);
+            const validNames = new Set(dealers.map(d => d.name));
+            if (state.currentDealer !== 'ALL' && !validNames.has(state.currentDealer)) {
+                state.currentDealer = 'ALL';
+            }
+
+            const optionsHtml = [
+                `<option value="ALL">All ${REGION_NAMES[state.currentRegion]} Dealerships (${dealers.length})</option>`,
+                ...dealers.map(d => `<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)} — ${escapeHtml(d.group)} (${d.state})</option>`)
+            ];
+
+            dealerSelect.innerHTML = optionsHtml.join('');
+            dealerSelect.value = state.currentDealer;
+        }
+
+        function toggleDealerDirectory() {
+            const body = document.getElementById('dealerDirectoryBody');
+            const arrow = document.getElementById('dealerDirectoryArrow');
+            if (!body) return;
+            const isHidden = body.classList.contains('hidden');
+            if (isHidden) {
+                body.classList.remove('hidden');
+                arrow.textContent = 'Hide List ▴';
+                renderDealerDirectory();
+            } else {
+                body.classList.add('hidden');
+                arrow.textContent = 'Show List ▾';
+            }
+        }
+
+        function selectDealerFromCard(dealerName) {
+            state.currentDealer = dealerName;
+            saveState();
+            renderAll();
+            showToast(`Switched to ${dealerName}`);
+        }
+
+        function renderDealerDirectory() {
+            const dealers = getDealersForRegion(state.currentRegion);
+            const titleEl = document.getElementById('dealerDirectoryTitle');
+            const gridEl = document.getElementById('dealerDirectoryGrid');
+            const searchEl = document.getElementById('dealerSearchInput');
+
+            if (titleEl) {
+                titleEl.textContent = `Dealerships in ${REGION_NAMES[state.currentRegion]} (${dealers.length})`;
+            }
+            if (!gridEl) return;
+
+            const query = (searchEl ? searchEl.value : '').trim().toLowerCase();
+            const filtered = query
+                ? dealers.filter(d =>
+                    d.name.toLowerCase().includes(query) ||
+                    d.group.toLowerCase().includes(query) ||
+                    d.state.toLowerCase().includes(query))
+                : dealers;
+
+            if (filtered.length === 0) {
+                gridEl.innerHTML = `<div class="col-span-full py-3 text-center text-xs text-slate-400">No dealerships match "${escapeHtml(query)}"</div>`;
+                return;
+            }
+
+            gridEl.innerHTML = filtered.map(d => {
+                const isSelected = state.currentDealer === d.name;
+                const statusTag = d.status === 'RELOCATION'
+                    ? `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">RELOCATION</span>`
+                    : '';
+
+                return `
+                    <button type="button" onclick="selectDealerFromCard('${escapeHtml(d.name).replace(/'/g, "\\'")}')"
+                            class="text-left p-2.5 rounded-lg border transition flex flex-col justify-between ${isSelected ? 'bg-teal-50 border-teal-400 ring-1 ring-teal-400' : 'bg-slate-50/70 border-slate-200 hover:bg-white hover:border-slate-300'}">
+                        <div class="flex items-start justify-between gap-1">
+                            <span class="text-xs font-bold text-slate-900 leading-snug">${escapeHtml(d.name)}</span>
+                            ${statusTag}
+                        </div>
+                        <div class="flex items-center justify-between mt-1.5 text-[10px] font-semibold text-slate-500">
+                            <span>${escapeHtml(d.group)}</span>
+                            <span class="px-1.5 py-0.2 rounded bg-slate-200/70 text-slate-700">${escapeHtml(d.state)}</span>
+                        </div>
+                    </button>
+                `;
+            }).join('');
         }
 
         function switchTab(tabName) {
@@ -422,21 +734,60 @@
 
         function openRegionFromSummary(regionCode) {
             state.currentRegion = regionCode;
+            state.currentDealer = 'ALL';
             switchTab('checklist');
             renderAll();
         }
 
+        function getCombinedRegionTotals(regionCode) {
+            const regionObj = state.regions[regionCode] || { items: getDefaultItems(), dealers: {} };
+            let rHave = 0;
+            let rNeed = 0;
+            let rVerified = 0;
+            let rTotalItems = regionObj.items.length;
+            const neededMap = new Map();
+
+            regionObj.items.forEach(item => {
+                const h = parseInt(item.have, 10) || 0;
+                const n = parseInt(item.need, 10) || 0;
+                rHave += h;
+                rNeed += n;
+                if (item.checked) rVerified += 1;
+                if (n > 0) {
+                    neededMap.set(item.text, (neededMap.get(item.text) || 0) + n);
+                }
+            });
+
+            // Include any individual dealership entries saved under this region
+            if (regionObj.dealers) {
+                Object.entries(regionObj.dealers).forEach(([dealerName, dItems]) => {
+                    dItems.forEach(item => {
+                        const h = parseInt(item.have, 10) || 0;
+                        const n = parseInt(item.need, 10) || 0;
+                        rHave += h;
+                        rNeed += n;
+                        if (n > 0) {
+                            const label = `${item.text} [${dealerName}]`;
+                            neededMap.set(label, (neededMap.get(label) || 0) + n);
+                        }
+                    });
+                });
+            }
+
+            return { rHave, rNeed, rVerified, rTotalItems, neededMap };
+        }
+
         function updateSummaries() {
-            const region = getActiveRegionData();
+            const items = getActiveItemsList();
             const progressEl = document.getElementById('checklistProgress');
             const neededEl = document.getElementById('totalNeededPill');
             const tabBadgeEl = document.getElementById('summaryTabNeedBadge');
 
-            const verifiedCount = region.items.filter(i => i.checked).length;
-            const totalNeeded = region.items.reduce((sum, item) => sum + (parseInt(item.need, 10) || 0), 0);
+            const verifiedCount = items.filter(i => i.checked).length;
+            const totalNeeded = items.reduce((sum, item) => sum + (parseInt(item.need, 10) || 0), 0);
 
             if (progressEl) {
-                progressEl.textContent = `${verifiedCount} / ${region.items.length} Verified`;
+                progressEl.textContent = `${verifiedCount} / ${items.length} Verified`;
             }
             if (neededEl) {
                 neededEl.textContent = `${totalNeeded.toLocaleString()} Needed`;
@@ -445,13 +796,9 @@
                     : 'text-xs font-bold px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200';
             }
 
-            // Calculate total needed across all regions for the Summary tab badge
             let allRegionsNeeded = 0;
             Object.keys(REGION_NAMES).forEach(code => {
-                const r = state.regions[code];
-                if (r && r.items) {
-                    allRegionsNeeded += r.items.reduce((s, it) => s + (parseInt(it.need, 10) || 0), 0);
-                }
+                allRegionsNeeded += getCombinedRegionTotals(code).rNeed;
             });
 
             if (tabBadgeEl) {
@@ -463,18 +810,18 @@
         }
  
         function renderChecklist() {
-            const region = getActiveRegionData();
+            const items = getActiveItemsList();
             const listEl = document.getElementById('checklistItems');
             if (!listEl) return;
 
             updateSummaries();
  
-            if (region.items.length === 0) {
-                listEl.innerHTML = `<li class="py-6 text-center text-sm text-slate-400">No POS items in this region. Add one below.</li>`;
+            if (items.length === 0) {
+                listEl.innerHTML = `<li class="py-6 text-center text-sm text-slate-400">No POS items in this checklist. Add one below.</li>`;
                 return;
             }
  
-            listEl.innerHTML = region.items.map(item => {
+            listEl.innerHTML = items.map(item => {
                 const badgeClass = TAG_STYLES[item.tag] || 'bg-slate-100 text-slate-700 border-slate-200';
                 const haveVal = parseInt(item.have, 10) || 0;
                 const needVal = parseInt(item.need, 10) || 0;
@@ -536,58 +883,54 @@
 
             Object.keys(REGION_NAMES).forEach(code => {
                 const regionName = REGION_NAMES[code];
-                const items = (state.regions[code] && state.regions[code].items) || [];
+                const dealerCount = getDealersForRegion(code).length;
+                const { rHave, rNeed, rVerified, rTotalItems, neededMap } = getCombinedRegionTotals(code);
 
-                let rHave = 0;
-                let rNeed = 0;
-                let rVerified = 0;
-                const neededList = [];
-
-                items.forEach(item => {
-                    const h = parseInt(item.have, 10) || 0;
-                    const n = parseInt(item.need, 10) || 0;
-                    rHave += h;
-                    rNeed += n;
-                    if (item.checked) rVerified += 1;
-
-                    if (n > 0) {
-                        neededList.push(`${n}× ${item.text}`);
-                    }
-
-                    const key = `${item.tag}::${item.text.trim().toLowerCase()}`;
-                    if (!rollupMap.has(key)) {
-                        rollupMap.set(key, {
-                            tag: item.tag,
-                            text: item.text.trim(),
-                            have: 0,
-                            need: 0
-                        });
-                    }
-                    const entry = rollupMap.get(key);
-                    entry.have += h;
-                    entry.need += n;
+                const regionObj = state.regions[code] || { items: [], dealers: {} };
+                const allCollections = [regionObj.items, ...Object.values(regionObj.dealers || {})];
+                allCollections.forEach(list => {
+                    list.forEach(item => {
+                        const h = parseInt(item.have, 10) || 0;
+                        const n = parseInt(item.need, 10) || 0;
+                        const key = `${item.tag}::${item.text.trim().toLowerCase()}`;
+                        if (!rollupMap.has(key)) {
+                            rollupMap.set(key, {
+                                tag: item.tag,
+                                text: item.text.trim(),
+                                have: 0,
+                                need: 0
+                            });
+                        }
+                        const entry = rollupMap.get(key);
+                        entry.have += h;
+                        entry.need += n;
+                    });
                 });
 
                 totalHave += rHave;
                 totalNeed += rNeed;
-                totalItems += items.length;
+                totalItems += rTotalItems;
                 totalVerified += rVerified;
                 if (rNeed > 0) regionsNeedingCount += 1;
 
-                const pct = items.length > 0 ? Math.round((rVerified / items.length) * 100) : 0;
-                const neededSummaryHtml = neededList.length > 0
-                    ? neededList.map(txt => `<span class="inline-block bg-rose-50 text-rose-700 border border-rose-200 text-xs font-medium px-2 py-0.5 rounded-md mr-1 mb-1">${escapeHtml(txt)}</span>`).join('')
+                const pct = rTotalItems > 0 ? Math.round((rVerified / rTotalItems) * 100) : 0;
+                const neededEntries = Array.from(neededMap.entries());
+                const neededSummaryHtml = neededEntries.length > 0
+                    ? neededEntries.map(([txt, qty]) => `<span class="inline-block bg-rose-50 text-rose-700 border border-rose-200 text-xs font-medium px-2 py-0.5 rounded-md mr-1 mb-1">${qty}× ${escapeHtml(txt)}</span>`).join('')
                     : `<span class="text-xs text-slate-400">Nothing needed</span>`;
 
                 regionRows.push(`
                     <tr class="hover:bg-slate-50/80 transition align-top">
                         <td class="py-3 px-4 font-bold text-slate-900 whitespace-nowrap">${escapeHtml(regionName)}</td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="inline-block text-xs font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">${dealerCount}</span>
+                        </td>
                         <td class="py-3 px-4 whitespace-nowrap">
                             <div class="flex items-center gap-2">
                                 <div class="w-14 bg-slate-100 rounded-full h-2 overflow-hidden">
                                     <div class="bg-teal-500 h-2 rounded-full" style="width: ${pct}%"></div>
                                 </div>
-                                <span class="text-xs font-semibold text-slate-600">${rVerified}/${items.length}</span>
+                                <span class="text-xs font-semibold text-slate-600">${rVerified}/${rTotalItems}</span>
                             </div>
                         </td>
                         <td class="py-3 px-4 text-right font-semibold text-slate-700">${rHave.toLocaleString()}</td>
@@ -608,7 +951,7 @@
 
             const overallPct = totalItems > 0 ? Math.round((totalVerified / totalItems) * 100) : 0;
             document.getElementById('sumVerifiedPct').textContent = `${overallPct}%`;
-            document.getElementById('sumVerifiedCount').textContent = `${totalVerified} / ${totalItems} items checked`;
+            document.getElementById('sumVerifiedCount').textContent = `${totalVerified} / ${totalItems} regional items checked`;
 
             document.getElementById('summaryRegionRows').innerHTML = regionRows.join('');
 
@@ -631,13 +974,14 @@
         }
 
         function exportSummaryCSV() {
-            const rows = [['Region', 'Type', 'POS Item', 'Verified', 'Have', 'Need']];
+            const rows = [['Region', 'Dealership', 'Type', 'POS Item', 'Verified', 'Have', 'Need']];
             Object.keys(REGION_NAMES).forEach(code => {
                 const regionName = REGION_NAMES[code];
-                const items = (state.regions[code] && state.regions[code].items) || [];
-                items.forEach(item => {
+                const regionObj = state.regions[code] || { items: [], dealers: {} };
+                regionObj.items.forEach(item => {
                     rows.push([
                         `"${regionName}"`,
+                        `"All Regional Dealerships"`,
                         `"${item.tag}"`,
                         `"${item.text.replace(/"/g, '""')}"`,
                         item.checked ? 'Yes' : 'No',
@@ -645,6 +989,21 @@
                         parseInt(item.need, 10) || 0
                     ]);
                 });
+                if (regionObj.dealers) {
+                    Object.entries(regionObj.dealers).forEach(([dealerName, dItems]) => {
+                        dItems.forEach(item => {
+                            rows.push([
+                                `"${regionName}"`,
+                                `"${dealerName.replace(/"/g, '""')}"`,
+                                `"${item.tag}"`,
+                                `"${item.text.replace(/"/g, '""')}"`,
+                                item.checked ? 'Yes' : 'No',
+                                parseInt(item.have, 10) || 0,
+                                parseInt(item.need, 10) || 0
+                            ]);
+                        });
+                    });
+                }
             });
 
             const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(r => r.join(',')).join('\n');
@@ -658,8 +1017,8 @@
         }
  
         function toggleItem(id) {
-            const region = getActiveRegionData();
-            const item = region.items.find(i => i.id === id);
+            const items = getActiveItemsList();
+            const item = items.find(i => i.id === id);
             if (item) {
                 item.checked = !item.checked;
                 saveState();
@@ -668,8 +1027,8 @@
         }
 
         function updateItemQty(id, field, rawVal) {
-            const region = getActiveRegionData();
-            const item = region.items.find(i => i.id === id);
+            const items = getActiveItemsList();
+            const item = items.find(i => i.id === id);
             if (!item) return;
 
             item[field] = Math.max(0, parseInt(rawVal, 10) || 0);
@@ -678,8 +1037,8 @@
         }
  
         function updateItemText(id, newText) {
-            const region = getActiveRegionData();
-            const item = region.items.find(i => i.id === id);
+            const items = getActiveItemsList();
+            const item = items.find(i => i.id === id);
             const cleaned = newText.trim();
             if (item && cleaned && item.text !== cleaned) {
                 item.text = cleaned;
@@ -691,8 +1050,8 @@
         }
  
         function deleteItem(id) {
-            const region = getActiveRegionData();
-            region.items = region.items.filter(i => i.id !== id);
+            const items = getActiveItemsList();
+            setActiveItemsList(items.filter(i => i.id !== id));
             saveState();
             renderChecklist();
             showToast('POS item removed');
@@ -700,7 +1059,16 @@
  
         function renderAll() {
             document.getElementById('regionSelect').value = state.currentRegion;
+            populateDealerDropdown();
+
+            const dealers = getDealersForRegion(state.currentRegion);
             document.getElementById('activeRegionPill').textContent = REGION_NAMES[state.currentRegion] || state.currentRegion;
+            document.getElementById('activeDealerPill').textContent = state.currentDealer === 'ALL'
+                ? `All Dealerships (${dealers.length})`
+                : state.currentDealer;
+
+            renderDealerDirectory();
+
             if (state.activeTab === 'summary') {
                 renderSummaryTab();
             } else {
@@ -720,19 +1088,24 @@
             modal.classList.remove('flex');
         }
  
-        function confirmResetRegion() {
-            const code = state.currentRegion;
-            state.regions[code] = {
-                items: getDefaultItems()
-            };
+        function confirmResetCurrent() {
+            setActiveItemsList(getDefaultItems());
             saveState();
             renderAll();
             closeResetModal();
-            showToast(`${REGION_NAMES[code]} POS reset to defaults`);
+            const scopeLabel = state.currentDealer === 'ALL' ? REGION_NAMES[state.currentRegion] : state.currentDealer;
+            showToast(`${scopeLabel} POS reset to defaults`);
         }
  
         document.getElementById('regionSelect').addEventListener('change', (e) => {
             state.currentRegion = e.target.value;
+            state.currentDealer = 'ALL';
+            saveState();
+            renderAll();
+        });
+
+        document.getElementById('dealerSelect').addEventListener('change', (e) => {
+            state.currentDealer = e.target.value;
             saveState();
             renderAll();
         });
@@ -747,8 +1120,8 @@
             const text = textEl.value.trim();
             if (!text) return;
  
-            const region = getActiveRegionData();
-            region.items.push({
+            const items = getActiveItemsList();
+            items.push({
                 id: String(Date.now()),
                 tag: tagEl.value,
                 text,
