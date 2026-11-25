@@ -25,12 +25,11 @@
  
     <style>
         @media print {
-            body { background: #ffffff !important; }
+            body { background: #ffffff !important; padding: 0 !important; }
             .no-print { display: none !important; }
             .sheet-card { box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
             input[type="number"] { border: none !important; background: transparent !important; padding: 0 !important; }
         }
-        /* Hide number input spinners for cleaner inline look */
         input[type="number"]::-webkit-inner-spin-button,
         input[type="number"]::-webkit-outer-spin-button {
             -webkit-appearance: none;
@@ -59,7 +58,7 @@
     </div>
  
     <!-- MAIN DIGITAL FIELD SHEET CONTAINER -->
-    <div class="max-w-3xl mx-auto space-y-6">
+    <div class="max-w-4xl mx-auto space-y-6">
  
         <!-- 1. TOP HEADER -->
         <header class="bg-slate-900 text-white rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -69,11 +68,11 @@
                 </span>
                 <div>
                     <h1 class="text-lg sm:text-xl font-bold tracking-tight">BYD Regional POS Checklist</h1>
-                    <p class="text-xs text-slate-400">Point of Sale Stock Verification &amp; Requirements</p>
+                    <p class="text-xs text-slate-400">Point of Sale Stock Verification &amp; Regional Summary</p>
                 </div>
             </div>
  
-            <div class="flex items-center gap-2 no-print">
+            <div class="flex flex-wrap items-center gap-2 no-print">
                 <!-- Region Dropdown -->
                 <select id="regionSelect" aria-label="Select Region"
                         class="bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm font-semibold rounded-xl px-3.5 py-2 focus:outline-none focus:border-teal-400 cursor-pointer">
@@ -97,71 +96,177 @@
             </div>
         </header>
  
-        <!-- 2. EDITABLE REGIONAL POS CHECKLIST -->
-        <section class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200 sheet-card">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-2 border-b border-slate-100">
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h2 class="text-base font-bold text-slate-900">POS Inventory &amp; Readiness</h2>
-                        <span id="activeRegionPill" class="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-teal-50 text-teal-700 border border-teal-200">
-                            National
-                        </span>
-                    </div>
-                    <p class="text-xs text-slate-400 mt-0.5">Update Have &amp; Need counts, click text to edit, and tick to verify &bull; Auto-saved per region</p>
-                </div>
-                <div class="flex items-center gap-2 self-start sm:self-auto">
-                    <span id="totalNeededPill" class="text-xs font-bold px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+        <!-- 2. MAIN CARD WITH TABS -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 sheet-card overflow-hidden">
+            
+            <!-- TAB BAR -->
+            <div class="flex border-b border-slate-200 bg-slate-50/70 px-4 sm:px-6 pt-3 gap-2 no-print">
+                <button type="button" id="tabChecklistBtn" onclick="switchTab('checklist')"
+                        class="px-4 py-2.5 text-xs sm:text-sm font-bold rounded-t-xl border-t border-x border-slate-200 bg-white text-slate-900 -mb-px transition">
+                    Regional Checklist
+                </button>
+                <button type="button" id="tabSummaryBtn" onclick="switchTab('summary')"
+                        class="px-4 py-2.5 text-xs sm:text-sm font-bold rounded-t-xl border-t border-x border-transparent text-slate-500 hover:text-slate-800 -mb-px transition flex items-center gap-2">
+                    Summary by Region
+                    <span id="summaryTabNeedBadge" class="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
                         0 Needed
                     </span>
-                    <span id="checklistProgress" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700">
-                        0 / 6 Verified
-                    </span>
-                </div>
+                </button>
             </div>
 
-            <!-- Column Headers -->
-            <div class="hidden sm:flex items-center gap-3 py-2 px-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <span class="w-5 text-center">OK</span>
-                <span class="w-20 text-center">Type</span>
-                <span class="flex-1">POS Item</span>
-                <span class="w-16 text-center">Have</span>
-                <span class="w-16 text-center">Need</span>
-                <span class="w-6 no-print"></span>
+            <!-- ===================================================== -->
+            <!-- TAB 1: REGIONAL POS CHECKLIST                         -->
+            <!-- ===================================================== -->
+            <div id="checklistTabContent" class="p-5 sm:p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-2 border-b border-slate-100">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-base font-bold text-slate-900">POS Inventory &amp; Readiness</h2>
+                            <span id="activeRegionPill" class="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-teal-50 text-teal-700 border border-teal-200">
+                                National
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-0.5">Update Have &amp; Need counts, click text to edit, and tick to verify &bull; Auto-saved per region</p>
+                    </div>
+                    <div class="flex items-center gap-2 self-start sm:self-auto">
+                        <span id="totalNeededPill" class="text-xs font-bold px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                            0 Needed
+                        </span>
+                        <span id="checklistProgress" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700">
+                            0 / 6 Verified
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Column Headers -->
+                <div class="hidden sm:flex items-center gap-3 py-2 px-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                    <span class="w-5 text-center">OK</span>
+                    <span class="w-20 text-center">Type</span>
+                    <span class="flex-1">POS Item</span>
+                    <span class="w-16 text-center">Have</span>
+                    <span class="w-16 text-center">Need</span>
+                    <span class="w-6 no-print"></span>
+                </div>
+     
+                <!-- POS Checklist Items -->
+                <ul id="checklistItems" class="divide-y divide-slate-100">
+                    <!-- Rendered via JS -->
+                </ul>
+     
+                <!-- Clean "+ Add POS Item" Inline Input Bar -->
+                <form id="addAssetForm" class="mt-4 pt-4 border-t border-slate-100 flex flex-col sm:flex-row gap-2 no-print">
+                    <select id="newAssetTag" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-700 focus:outline-none focus:border-teal-500">
+                        <option value="STAND">STAND</option>
+                        <option value="POSTER">POSTER</option>
+                        <option value="DECALS">DECALS</option>
+                        <option value="FLAGS">FLAGS</option>
+                        <option value="BROCHURE">BROCHURE</option>
+                        <option value="QR CARD">QR CARD</option>
+                    </select>
+                    <input type="text" id="newAssetText" placeholder="Add new POS item..."
+                           class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-teal-500">
+                    <div class="flex gap-2">
+                        <input type="number" id="newAssetHave" min="0" placeholder="Have" aria-label="Initial Have Quantity"
+                               class="w-20 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2.5 text-sm text-center text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-teal-500">
+                        <input type="number" id="newAssetNeed" min="0" placeholder="Need" aria-label="Initial Need Quantity"
+                               class="w-20 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2.5 text-sm text-center text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-teal-500">
+                        <button type="submit" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold transition shrink-0">
+                            + Add POS
+                        </button>
+                    </div>
+                </form>
             </div>
- 
-            <!-- POS Checklist Items -->
-            <ul id="checklistItems" class="divide-y divide-slate-100">
-                <!-- Rendered via JS -->
-            </ul>
- 
-            <!-- Clean "+ Add POS Item" Inline Input Bar -->
-            <form id="addAssetForm" class="mt-4 pt-4 border-t border-slate-100 flex flex-col sm:flex-row gap-2 no-print">
-                <select id="newAssetTag" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-700 focus:outline-none focus:border-teal-500">
-                    <option value="STAND">STAND</option>
-                    <option value="POSTER">POSTER</option>
-                    <option value="DECALS">DECALS</option>
-                    <option value="FLAGS">FLAGS</option>
-                    <option value="BROCHURE">BROCHURE</option>
-                    <option value="QR CARD">QR CARD</option>
-                </select>
-                <input type="text" id="newAssetText" placeholder="Add new POS item..."
-                       class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-teal-500">
-                <div class="flex gap-2">
-                    <input type="number" id="newAssetHave" min="0" placeholder="Have" aria-label="Initial Have Quantity"
-                           class="w-20 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2.5 text-sm text-center text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-teal-500">
-                    <input type="number" id="newAssetNeed" min="0" placeholder="Need" aria-label="Initial Need Quantity"
-                           class="w-20 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2.5 text-sm text-center text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-teal-500">
-                    <button type="submit" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold transition shrink-0">
-                        + Add POS
+
+            <!-- ===================================================== -->
+            <!-- TAB 2: SUMMARY BY REGION & WHAT IS NEEDED             -->
+            <!-- ===================================================== -->
+            <div id="summaryTabContent" class="hidden p-5 sm:p-6 space-y-6">
+                
+                <!-- Top Summary Strip -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900">POS Summary by Region</h2>
+                        <p class="text-xs text-slate-400">Overview of stock on hand and exact POS quantities required across all regions</p>
+                    </div>
+                    <button type="button" onclick="exportSummaryCSV()" class="self-start sm:self-auto px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition no-print">
+                        Download CSV
                     </button>
                 </div>
-            </form>
+
+                <!-- 3 Compact KPI Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                    <div class="p-4 rounded-xl bg-slate-900 text-white">
+                        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total POS Needed</div>
+                        <div id="sumTotalNeed" class="text-2xl sm:text-3xl font-extrabold text-rose-400 mt-1">0</div>
+                        <div id="sumRegionsCount" class="text-xs text-slate-400 mt-1">Across 0 regions</div>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total POS On Hand</div>
+                        <div id="sumTotalHave" class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">0</div>
+                        <div class="text-xs text-slate-500 mt-1">Current stock across regions</div>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Verification Progress</div>
+                        <div id="sumVerifiedPct" class="text-2xl sm:text-3xl font-extrabold text-teal-600 mt-1">0%</div>
+                        <div id="sumVerifiedCount" class="text-xs text-slate-500 mt-1">0 / 36 items checked</div>
+                    </div>
+                </div>
+
+                <!-- Regional Breakdown Table -->
+                <div class="border border-slate-200 rounded-xl overflow-hidden">
+                    <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Breakdown by Region</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-400 bg-white">
+                                    <th class="py-2.5 px-4">Region</th>
+                                    <th class="py-2.5 px-4">Verified</th>
+                                    <th class="py-2.5 px-4 text-right">Have</th>
+                                    <th class="py-2.5 px-4 text-right">Need</th>
+                                    <th class="py-2.5 px-4">What Is Needed</th>
+                                    <th class="py-2.5 px-4 text-right no-print">Edit</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summaryRegionRows" class="divide-y divide-slate-100">
+                                <!-- Rendered via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- National Rollup of Needed Items -->
+                <div class="border border-slate-200 rounded-xl overflow-hidden">
+                    <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Total POS Required (All Regions Combined)</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-400 bg-white">
+                                    <th class="py-2.5 px-4 w-24">Type</th>
+                                    <th class="py-2.5 px-4">POS Item</th>
+                                    <th class="py-2.5 px-4 text-right">Total Have</th>
+                                    <th class="py-2.5 px-4 text-right">Total Needed</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summaryItemRollupRows" class="divide-y divide-slate-100">
+                                <!-- Rendered via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
         </section>
  
     </div>
  
     <script>
-        const STORAGE_KEY = 'byd_regional_pos_checklist_v1';
+        const STORAGE_KEY = 'byd_regional_pos_checklist_v2';
  
         const REGION_NAMES = {
             NATIONAL: 'National',
@@ -199,35 +304,38 @@
                     items: getDefaultItems()
                 };
             });
-            return { currentRegion: 'NATIONAL', regions };
+            return { currentRegion: 'NATIONAL', activeTab: 'checklist', regions };
         }
  
         function loadState() {
+            let base = buildInitialState();
+
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed && parsed.regions) {
+                        base = { ...base, ...parsed };
+                    }
+                }
+            } catch (e) {}
+
+            // Merge shared URL payload if opened via a Share Link
             try {
                 if (window.location.hash && window.location.hash.startsWith('#share=')) {
                     const encoded = window.location.hash.slice(7);
                     const jsonStr = decodeURIComponent(escape(atob(encoded)));
                     const shared = JSON.parse(jsonStr);
-                    if (shared && shared.regionCode && shared.regionData) {
-                        const base = buildInitialState();
+                    if (shared && shared.regionCode && shared.regionData && REGION_NAMES[shared.regionCode]) {
                         base.currentRegion = shared.regionCode;
                         base.regions[shared.regionCode] = shared.regionData;
-                        return base;
                     }
                 }
             } catch (e) {
                 console.warn('Invalid share link payload', e);
             }
  
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) return buildInitialState();
-                const parsed = JSON.parse(raw);
-                if (!parsed || !parsed.regions) return buildInitialState();
-                return parsed;
-            } catch (e) {
-                return buildInitialState();
-            }
+            return base;
         }
  
         function shareCurrentState() {
@@ -286,10 +394,43 @@
             return state.regions[state.currentRegion] || state.regions.NATIONAL;
         }
 
+        function switchTab(tabName) {
+            state.activeTab = tabName;
+            saveState();
+
+            const checklistContent = document.getElementById('checklistTabContent');
+            const summaryContent = document.getElementById('summaryTabContent');
+            const checklistBtn = document.getElementById('tabChecklistBtn');
+            const summaryBtn = document.getElementById('tabSummaryBtn');
+
+            if (tabName === 'summary') {
+                checklistContent.classList.add('hidden');
+                summaryContent.classList.remove('hidden');
+
+                summaryBtn.className = 'px-4 py-2.5 text-xs sm:text-sm font-bold rounded-t-xl border-t border-x border-slate-200 bg-white text-slate-900 -mb-px transition flex items-center gap-2';
+                checklistBtn.className = 'px-4 py-2.5 text-xs sm:text-sm font-bold rounded-t-xl border-t border-x border-transparent text-slate-500 hover:text-slate-800 -mb-px transition';
+                renderSummaryTab();
+            } else {
+                summaryContent.classList.add('hidden');
+                checklistContent.classList.remove('hidden');
+
+                checklistBtn.className = 'px-4 py-2.5 text-xs sm:text-sm font-bold rounded-t-xl border-t border-x border-slate-200 bg-white text-slate-900 -mb-px transition';
+                summaryBtn.className = 'px-4 py-2.5 text-xs sm:text-sm font-bold rounded-t-xl border-t border-x border-transparent text-slate-500 hover:text-slate-800 -mb-px transition flex items-center gap-2';
+                renderChecklist();
+            }
+        }
+
+        function openRegionFromSummary(regionCode) {
+            state.currentRegion = regionCode;
+            switchTab('checklist');
+            renderAll();
+        }
+
         function updateSummaries() {
             const region = getActiveRegionData();
             const progressEl = document.getElementById('checklistProgress');
             const neededEl = document.getElementById('totalNeededPill');
+            const tabBadgeEl = document.getElementById('summaryTabNeedBadge');
 
             const verifiedCount = region.items.filter(i => i.checked).length;
             const totalNeeded = region.items.reduce((sum, item) => sum + (parseInt(item.need, 10) || 0), 0);
@@ -299,11 +440,25 @@
             }
             if (neededEl) {
                 neededEl.textContent = `${totalNeeded.toLocaleString()} Needed`;
-                if (totalNeeded === 0) {
-                    neededEl.className = 'text-xs font-bold px-3 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-200';
-                } else {
-                    neededEl.className = 'text-xs font-bold px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200';
+                neededEl.className = totalNeeded === 0
+                    ? 'text-xs font-bold px-3 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-200'
+                    : 'text-xs font-bold px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200';
+            }
+
+            // Calculate total needed across all regions for the Summary tab badge
+            let allRegionsNeeded = 0;
+            Object.keys(REGION_NAMES).forEach(code => {
+                const r = state.regions[code];
+                if (r && r.items) {
+                    allRegionsNeeded += r.items.reduce((s, it) => s + (parseInt(it.need, 10) || 0), 0);
                 }
+            });
+
+            if (tabBadgeEl) {
+                tabBadgeEl.textContent = `${allRegionsNeeded.toLocaleString()} Needed`;
+                tabBadgeEl.className = allRegionsNeeded > 0
+                    ? 'text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700'
+                    : 'text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700';
             }
         }
  
@@ -366,6 +521,141 @@
                 `;
             }).join('');
         }
+
+        function renderSummaryTab() {
+            updateSummaries();
+
+            let totalHave = 0;
+            let totalNeed = 0;
+            let totalItems = 0;
+            let totalVerified = 0;
+            let regionsNeedingCount = 0;
+
+            const regionRows = [];
+            const rollupMap = new Map();
+
+            Object.keys(REGION_NAMES).forEach(code => {
+                const regionName = REGION_NAMES[code];
+                const items = (state.regions[code] && state.regions[code].items) || [];
+
+                let rHave = 0;
+                let rNeed = 0;
+                let rVerified = 0;
+                const neededList = [];
+
+                items.forEach(item => {
+                    const h = parseInt(item.have, 10) || 0;
+                    const n = parseInt(item.need, 10) || 0;
+                    rHave += h;
+                    rNeed += n;
+                    if (item.checked) rVerified += 1;
+
+                    if (n > 0) {
+                        neededList.push(`${n}× ${item.text}`);
+                    }
+
+                    const key = `${item.tag}::${item.text.trim().toLowerCase()}`;
+                    if (!rollupMap.has(key)) {
+                        rollupMap.set(key, {
+                            tag: item.tag,
+                            text: item.text.trim(),
+                            have: 0,
+                            need: 0
+                        });
+                    }
+                    const entry = rollupMap.get(key);
+                    entry.have += h;
+                    entry.need += n;
+                });
+
+                totalHave += rHave;
+                totalNeed += rNeed;
+                totalItems += items.length;
+                totalVerified += rVerified;
+                if (rNeed > 0) regionsNeedingCount += 1;
+
+                const pct = items.length > 0 ? Math.round((rVerified / items.length) * 100) : 0;
+                const neededSummaryHtml = neededList.length > 0
+                    ? neededList.map(txt => `<span class="inline-block bg-rose-50 text-rose-700 border border-rose-200 text-xs font-medium px-2 py-0.5 rounded-md mr-1 mb-1">${escapeHtml(txt)}</span>`).join('')
+                    : `<span class="text-xs text-slate-400">Nothing needed</span>`;
+
+                regionRows.push(`
+                    <tr class="hover:bg-slate-50/80 transition align-top">
+                        <td class="py-3 px-4 font-bold text-slate-900 whitespace-nowrap">${escapeHtml(regionName)}</td>
+                        <td class="py-3 px-4 whitespace-nowrap">
+                            <div class="flex items-center gap-2">
+                                <div class="w-14 bg-slate-100 rounded-full h-2 overflow-hidden">
+                                    <div class="bg-teal-500 h-2 rounded-full" style="width: ${pct}%"></div>
+                                </div>
+                                <span class="text-xs font-semibold text-slate-600">${rVerified}/${items.length}</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4 text-right font-semibold text-slate-700">${rHave.toLocaleString()}</td>
+                        <td class="py-3 px-4 text-right font-extrabold ${rNeed > 0 ? 'text-rose-600' : 'text-slate-400'}">${rNeed.toLocaleString()}</td>
+                        <td class="py-3 px-4">${neededSummaryHtml}</td>
+                        <td class="py-3 px-4 text-right no-print">
+                            <button type="button" onclick="openRegionFromSummary('${code}')" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline underline-offset-2">
+                                Edit
+                            </button>
+                        </td>
+                    </tr>
+                `);
+            });
+
+            document.getElementById('sumTotalNeed').textContent = totalNeed.toLocaleString();
+            document.getElementById('sumRegionsCount').textContent = `Across ${regionsNeedingCount} of ${Object.keys(REGION_NAMES).length} regions`;
+            document.getElementById('sumTotalHave').textContent = totalHave.toLocaleString();
+
+            const overallPct = totalItems > 0 ? Math.round((totalVerified / totalItems) * 100) : 0;
+            document.getElementById('sumVerifiedPct').textContent = `${overallPct}%`;
+            document.getElementById('sumVerifiedCount').textContent = `${totalVerified} / ${totalItems} items checked`;
+
+            document.getElementById('summaryRegionRows').innerHTML = regionRows.join('');
+
+            const rollupArray = Array.from(rollupMap.values()).sort((a, b) => b.need - a.need);
+            document.getElementById('summaryItemRollupRows').innerHTML = rollupArray.map(item => {
+                const badgeClass = TAG_STYLES[item.tag] || 'bg-slate-100 text-slate-700 border-slate-200';
+                return `
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-2.5 px-4">
+                            <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded border ${badgeClass} w-20 text-center">
+                                ${escapeHtml(item.tag)}
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-4 font-medium text-slate-800">${escapeHtml(item.text)}</td>
+                        <td class="py-2.5 px-4 text-right font-semibold text-slate-600">${item.have.toLocaleString()}</td>
+                        <td class="py-2.5 px-4 text-right font-extrabold ${item.need > 0 ? 'text-rose-600' : 'text-slate-400'}">${item.need.toLocaleString()}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function exportSummaryCSV() {
+            const rows = [['Region', 'Type', 'POS Item', 'Verified', 'Have', 'Need']];
+            Object.keys(REGION_NAMES).forEach(code => {
+                const regionName = REGION_NAMES[code];
+                const items = (state.regions[code] && state.regions[code].items) || [];
+                items.forEach(item => {
+                    rows.push([
+                        `"${regionName}"`,
+                        `"${item.tag}"`,
+                        `"${item.text.replace(/"/g, '""')}"`,
+                        item.checked ? 'Yes' : 'No',
+                        parseInt(item.have, 10) || 0,
+                        parseInt(item.need, 10) || 0
+                    ]);
+                });
+            });
+
+            const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(r => r.join(',')).join('\n');
+            const link = document.createElement('a');
+            link.setAttribute('href', encodeURI(csvContent));
+            link.setAttribute('download', `BYD_Regional_POS_Summary_${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Summary CSV downloaded');
+        }
  
         function toggleItem(id) {
             const region = getActiveRegionData();
@@ -382,8 +672,7 @@
             const item = region.items.find(i => i.id === id);
             if (!item) return;
 
-            const parsed = Math.max(0, parseInt(rawVal, 10) || 0);
-            item[field] = parsed;
+            item[field] = Math.max(0, parseInt(rawVal, 10) || 0);
             saveState();
             renderChecklist();
         }
@@ -412,7 +701,11 @@
         function renderAll() {
             document.getElementById('regionSelect').value = state.currentRegion;
             document.getElementById('activeRegionPill').textContent = REGION_NAMES[state.currentRegion] || state.currentRegion;
-            renderChecklist();
+            if (state.activeTab === 'summary') {
+                renderSummaryTab();
+            } else {
+                renderChecklist();
+            }
         }
  
         function openResetModal() {
@@ -472,6 +765,7 @@
             showToast('POS item added');
         });
  
+        switchTab(state.activeTab || 'checklist');
         renderAll();
     </script>
 </body>
